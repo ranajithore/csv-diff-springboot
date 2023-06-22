@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>CSV Comparator Utility</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/preview.css" rel="stylesheet">
+    <style>
+        .line {
+            height: 5px;
+            flex-grow: 100;
+            background: #eee;
+        }
+
+        .spinner-border {
+            height: 40px;
+            width: 40px;
+            background: #eee;
+        }
+
+        .circle {
+            height: 40px;
+            width: 40px;
+            border-radius: 20px;
+            background: #eee;
+        }
+
+        .circle-1-text {
+            position: absolute;
+            margin-top: 40px;
+            margin-left: -35px;
+        }
+    </style>
+</head>
+<body>
+<!--Nav Bar-->
+<nav class="navbar fixed-top bg-dark border-bottom border-bottom-dark" data-bs-theme="dark">
+    <div class="d-flex w-100">
+        <img class="logo" src="/images/" alt="">
+        <h5 class="text-white w-100 text-center">CSV Comparison Utility</h5>
+    </div>
+</nav>
+
+<!--Tables-->
+
+<div class="container adjusted-margin-top adjusted-margin-bottom">
+    <div class="row">
+        <lottie-player class="m-auto" src="https://assets2.lottiefiles.com/temp/lf20_UsfnhV.json"  background="transparent"  speed="1"  style="width: 300px; height: 300px;"  loop  autoplay></lottie-player>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="d-flex flex-row justify-content-center align-items-center m-auto">
+                    <div class="circle text-center">
+                        <div class="circle-1-text">Pre-processing files</div>
+                    </div>
+<!--                <div class="spinner-border text-info" role="status">-->
+<!--                    <span class="visually-hidden">1</span>-->
+<!--                </div>-->
+                <div class="line"></div>
+
+                <div class="circle">
+                    <div class="circle-1-text">Importing data</div>
+                </div>
+                <div class="line"></div>
+
+                <div class="circle">
+                    <div class="circle-1-text">Finding differences</div>
+                </div>
+                <div class="line"></div>
+
+                <div class="circle">
+                    <div class="circle-1-text">Writing output</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!--Footer-->
+<nav class="navbar fixed-bottom bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand m-auto footer-text" href="#">© 2023 . All rights reserved.</a>
+    </div>
+</nav>
+
+<script src="/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+<!--<script src="/js/progressbar.min.js"></script>-->
+
+<script>
+    // import ProgressBar from "../static/js/progressbar.min";
+
+    var bar = new ProgressBar.Line('.container', {
+        strokeWidth: 1,
+        easing: 'easeInOut',
+        duration: 1000,
+        color: 'rgb(106, 215, 153)',
+        trailColor: '#eee',
+        trailWidth: 1,
+        svgStyle: {width: '100%', height: '100%'}
+    });
+
+    bar.animate(1.0);
+</script>
+</body>
+</html>

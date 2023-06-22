@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>CSV Comparator Utility</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/index.css" rel="stylesheet">
+</head>
+<body>
+    <!--Nav Bar-->
+    <nav class="navbar fixed-top bg-dark border-bottom border-bottom-dark" data-bs-theme="dark">
+        <img class="logo" src="../static/images/" alt="">
+    </nav>
+
+    <!--Banner-->
+    <div class="banner gradient-bg text-center adjusted-margin-top">
+        <p class="title">CSV Comparison Utility</p>
+        <p class="sub-title">A tool to compare tabular data in CSV files of any size</p>
+    </div>
+
+    <div id="uploadBody" class="row adjusted-margin-bottom">
+        <!--Instructions-->
+        <div class="container m-3 col-4">
+            <h3>Instructions</h3>
+            <ul>
+                <li>Upload CSV</li>
+            </ul>
+        </div>
+
+        <div class="col">
+            <!--Upload Files Section-->
+            <form id="uploadForm" class="container my-3">
+                <h3>Upload Files</h3>
+                <p><span class="control-label">(</span>&nbsp;<span>)</span> Mandatory fields, Upload zip files only</p>
+                <div class="row mt-3">
+                    <div class="col">
+                        <label class="label control-label" for="oldFileInput">Old File</label>
+                        <div class="row align-items-center">
+                            <div class="col-6">
+                                <input required id="oldFileInput" name="oldFile" class="form-control" type="file" accept="application/zip">
+                            </div>
+                            <div class="col-4">
+                                <div class="progress m-auto d-none">
+                                    <div id="oldFileProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 0"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col">
+                        <label class="label control-label" for="newFileInput">New File</label>
+                        <div class="row align-items-center">
+                            <div class="col-6">
+                                <input required id="newFileInput" name="oldFile" class="form-control" type="file" accept="application/zip">
+                            </div>
+                            <div class="col-4">
+                                <div class="progress m-auto d-none">
+                                    <div id="newFileProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 0"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-6 d-flex justify-content-center">
+                        <button id="uploadBtn" class="btn btn-primary" type="submit">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload" viewBox="0 0 16 16">
+                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                                <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                            </svg>
+                            Upload
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!--Upload Successful Section-->
+    <div id="uploadSuccessSection" class="d-none container my-3 text-center adjusted-margin-bottom">
+            <lottie-player id="uploadSuccessAnim" src="https://assets6.lottiefiles.com/packages/lf20_pqnfmone.json" class="success-anim m-auto"></lottie-player>
+            <p class="success-text">Files Uploaded Successfully</p>
+        </div>
+
+    <!--Upload Failure Section-->
+    <div id="uploadFailureSection" class="d-none container my-3 text-center adjusted-margin-bottom">
+        <lottie-player id="uploadFailureAnim" src="https://assets5.lottiefiles.com/packages/lf20_pqpmxbxp.json"  class="failure-anim m-auto"></lottie-player>
+        <p class="success-text">Failed to upload files <a href="/">Please try again</a></p>
+    </div>
+
+    <!--Unsupported File Section-->
+    <div id="unsupportedFileSection" class="d-none container my-3 text-center adjusted-margin-bottom">
+        <lottie-player id="unsupportedFileAnim" src="https://assets3.lottiefiles.com/packages/lf20_bdnjxekx.json"  class="failure-anim m-auto"></lottie-player>
+        <p class="success-text">Unsupported file format. Please read instructions and <a href="/">try again</a></p>
+    </div>
+
+    <!--Footer-->
+    <nav class="navbar fixed-bottom bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand m-auto footer-text" href="#">© 2023 . All rights reserved.</a>
+        </div>
+    </nav>
+
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="/js/index.js"></script>
+</body>
+</html>

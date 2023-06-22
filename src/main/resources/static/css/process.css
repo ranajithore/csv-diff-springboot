@@ -1,0 +1,59 @@
+.logo {
+    height: 50px;
+    position: fixed;
+    margin: 0 auto;
+}
+
+
+.title {
+    font-size: 50px;
+    font-weight: bold;
+}
+
+.sub-title {
+    font-size: 25px;
+}
+
+.label {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.text {
+    font-size: 18px;
+}
+
+.btn {
+    width: 150px;
+}
+
+.footer-text {
+    color: white;
+    font-size: 14px;
+}
+
+
+.success-text {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.adjusted-margin-top {
+    margin-top: 65px;
+}
+
+.adjusted-margin-bottom {
+    margin-bottom: 65px;
+}
+
+.adjusted-margin-top {
+    margin-top: 65px;
+}
+
+.adjusted-margin-bottom {
+    margin-bottom: 65px;
+}
+
+.h6 {
+    margin-bottom: 0;
+}
