@@ -57,3 +57,67 @@
 .h6 {
     margin-bottom: 0;
 }
+
+.line {
+    height: 5px;
+    flex-grow: 100;
+    background: #eee;
+}
+
+.spinner-border {
+    height: 40px;
+    width: 40px;
+    background: #eee;
+}
+
+.circle {
+    height: 40px;
+    width: 40px;
+    border-radius: 20px;
+    background: #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.success-anim {
+    position: absolute;
+    height: 60px;
+    width: 60px;
+}
+
+.failure-anim {
+    position: absolute;
+    height: 55px;
+    width: 55px;
+}
+
+h6 {
+    position: absolute;
+    margin-top: 80px;
+}
+
+.spinner {
+    position: absolute;
+    background: transparent !important;
+}
+
+.line-success {
+    background: rgb(106, 215, 153);
+}
+
+#logs {
+    border-radius: 10px;
+    height: 200px;
+    overflow: scroll;
+}
+
+.border-bottom-dashed {
+    border-bottom: 1px white dashed;
+}
+
+.anim {
+    height: 300px;
+    width: 300px;
+    background: transparent;
+}

@@ -7,33 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>CSV Comparator Utility</title>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/css/preview.css" rel="stylesheet">
-    <style>
-        .line {
-            height: 5px;
-            flex-grow: 100;
-            background: #eee;
-        }
-
-        .spinner-border {
-            height: 40px;
-            width: 40px;
-            background: #eee;
-        }
-
-        .circle {
-            height: 40px;
-            width: 40px;
-            border-radius: 20px;
-            background: #eee;
-        }
-
-        .circle-1-text {
-            position: absolute;
-            margin-top: 40px;
-            margin-left: -35px;
-        }
-    </style>
+    <link href="/css/process.css" rel="stylesheet">
 </head>
 <body>
 <!--Nav Bar-->
@@ -44,37 +18,73 @@
     </div>
 </nav>
 
-<!--Tables-->
-
 <div class="container adjusted-margin-top adjusted-margin-bottom">
     <div class="row">
-        <lottie-player class="m-auto" src="https://assets2.lottiefiles.com/temp/lf20_UsfnhV.json"  background="transparent"  speed="1"  style="width: 300px; height: 300px;"  loop  autoplay></lottie-player>
+        <lottie-player id="successAnim" src="https://assets6.lottiefiles.com/packages/lf20_pqnfmone.json" class="anim d-none m-auto"></lottie-player>
+        <lottie-player id="failureAnim" src="https://assets5.lottiefiles.com/packages/lf20_pqpmxbxp.json" class="anim d-none m-auto"></lottie-player>
+        <lottie-player id="processAnim" class="m-auto anim" src="https://assets2.lottiefiles.com/temp/lf20_UsfnhV.json" loop  autoplay></lottie-player>
+    </div>
+    <div class="row text-center my-3">
+        <h6 id="successText" class="d-none">Operation Completed. Please click on Download Button to download the result.</h6>
+        <h6 id="failureText" class="d-none">Operation Failed. Please check Operation Logs.</h6>
     </div>
 
-    <div class="row">
+    <div class="row mt-4">
         <div class="col">
-            <div class="d-flex flex-row justify-content-center align-items-center m-auto">
-                    <div class="circle text-center">
-                        <div class="circle-1-text">Pre-processing files</div>
+            <div class="d-flex w-75 flex-row justify-content-center align-items-center m-auto">
+                <div id="circle1" class="circle">
+                    <span>1</span>
+                    <h6>Pre-Processing Files</h6>
+                    <div class="spinner spinner-border text-primary d-none" role="status">
+                        <span class="visually-hidden">Loading...</span>
                     </div>
-<!--                <div class="spinner-border text-info" role="status">-->
-<!--                    <span class="visually-hidden">1</span>-->
-<!--                </div>-->
-                <div class="line"></div>
-
-                <div class="circle">
-                    <div class="circle-1-text">Importing data</div>
+                    <lottie-player src="https://assets6.lottiefiles.com/packages/lf20_pqnfmone.json" class="success-anim d-none"></lottie-player>
+                    <lottie-player src="https://assets5.lottiefiles.com/packages/lf20_pqpmxbxp.json" class="failure-anim d-none"></lottie-player>
                 </div>
-                <div class="line"></div>
-
-                <div class="circle">
-                    <div class="circle-1-text">Finding differences</div>
+                <div id="line1" class="line"></div>
+                <div id="circle2" class="circle">
+                    <span>2</span>
+                    <h6>Importing Data</h6>
+                    <div class="spinner spinner-border text-primary d-none" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <lottie-player src="https://assets6.lottiefiles.com/packages/lf20_pqnfmone.json" class="success-anim d-none"></lottie-player>
+                    <lottie-player src="https://assets5.lottiefiles.com/packages/lf20_pqpmxbxp.json" class="failure-anim d-none"></lottie-player>
                 </div>
-                <div class="line"></div>
-
-                <div class="circle">
-                    <div class="circle-1-text">Writing output</div>
+                <div id="line2" class="line"></div>
+                <div id="circle3" class="circle">
+                    <span>3</span>
+                    <h6>Comparing Data</h6>
+                    <div class="spinner spinner-border text-primary d-none" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <lottie-player src="https://assets6.lottiefiles.com/packages/lf20_pqnfmone.json" class="success-anim d-none"></lottie-player>
+                    <lottie-player src="https://assets5.lottiefiles.com/packages/lf20_pqpmxbxp.json" class="failure-anim d-none"></lottie-player>
                 </div>
+                <div id="line3" class="line"></div>
+                <div id="circle4" class="circle">
+                    <span>4</span>
+                    <h6>Exporting Data to Excel</h6>
+                    <div class="spinner spinner-border text-primary d-none" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <lottie-player src="https://assets6.lottiefiles.com/packages/lf20_pqnfmone.json" class="success-anim d-none"></lottie-player>
+                    <lottie-player src="https://assets5.lottiefiles.com/packages/lf20_pqpmxbxp.json" class="failure-anim d-none"></lottie-player>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col d-flex justify-content-center align-items-center">
+            <button id="downloadBtn" class="btn btn-primary" disabled>Download</button>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col">
+            <div id="logs" class="container bg-dark text-white">
+                <p class="text-center mt-2 pb-2 border-bottom-dashed">OPERATION LOGS</p>
             </div>
         </div>
     </div>
@@ -91,22 +101,7 @@
 <script src="/js/bootstrap.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.0.slim.min.js" integrity="sha256-tG5mcZUtJsZvyKAxYLVXrmjKBVLd6VpVccqz/r4ypFE=" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-<!--<script src="/js/progressbar.min.js"></script>-->
-
-<script>
-    // import ProgressBar from "../static/js/progressbar.min";
-
-    var bar = new ProgressBar.Line('.container', {
-        strokeWidth: 1,
-        easing: 'easeInOut',
-        duration: 1000,
-        color: 'rgb(106, 215, 153)',
-        trailColor: '#eee',
-        trailWidth: 1,
-        svgStyle: {width: '100%', height: '100%'}
-    });
-
-    bar.animate(1.0);
-</script>
+<script src="/js/progressbar.min.js"></script>
+<script src="/js/process.js"></script>
 </body>
 </html>

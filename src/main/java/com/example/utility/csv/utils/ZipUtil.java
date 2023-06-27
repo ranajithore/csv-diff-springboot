@@ -21,7 +21,7 @@ public class ZipUtil {
 
     public static void zip(Path targetDir) throws ZipException {
         final String zipFileName = targetDir.getFileName() + ".zip";
-        final Path zipFilePath = Paths.get(targetDir.getParent().toString(), zipFileName);
+        final Path zipFilePath = targetDir.getParent().resolve(zipFileName);
         new ZipFile(zipFilePath.toString()).addFolder(targetDir.toFile());
     }
 
@@ -38,9 +38,10 @@ public class ZipUtil {
                         Files.getFileExtension(fileHeader.getFileName()).equals("csv"))
                 .collect(Collectors.toCollection(ArrayList::new));
         String tempFileName = zipFileHeaders.get(0).getFileName();
-        Path tempFile = java.nio.file.Files.createFile(tempDestination.resolve(tempFileName));
-        Path finalFile = java.nio.file.Files.createFile(destination.resolve(fileName));
+        Path tempFile = tempDestination.resolve(tempFileName);
+        Path finalFile = destination.resolve(fileName);
         java.nio.file.Files.move(tempFile, finalFile);
+        java.nio.file.Files.delete(tempDestination);
     }
 
     public static int numberOfCSVFilesInZip(Path zipFilePath) throws ZipException {

@@ -25,8 +25,8 @@
                 <div class="col-6">
                     <h4 class="text-center">Old Table</h4>
                     <div class="table-responsive">
-                        <table id="oldTable" class="table table-striped">
-                            <thead>
+                        <table id="oldTable" class="table table-striped-columns table-success">
+                            <thead class="table-dark">
                             <tr>
                                 <th th:each="header: ${oldTableHeaders}" th:text="${header}" scope="col">#</th>
                             </tr>
@@ -38,7 +38,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="w-100 d-flex flex-row justify-content-center align-items-center">
+                    <div class="w-100 d-flex flex-row justify-content-center align-items-center mt-3">
                         <label class="h6" for="oldPrimaryKey">Choose Old Primary Key:&nbsp;</label>
                         <select name="oldPrimaryKey" id="oldPrimaryKey">
                             <option th:each="header: ${oldTableHeaders}" th:value="${headerStat.index}" th:text="${header}"></option>
@@ -48,8 +48,8 @@
                 <div class="col-6">
                     <h4 class="text-center">New Table</h4>
                     <div class="table-responsive">
-                        <table id="newTable" class="table table-striped">
-                            <thead>
+                        <table id="newTable" class="table table-striped-columns table-success">
+                            <thead class="table-dark">
                             <tr>
                                 <th th:each="header: ${newTableHeaders}" th:text="${header}" scope="col">#</th>
                             </tr>
@@ -61,7 +61,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="w-100 d-flex flex-row justify-content-center align-items-center">
+                    <div class="w-100 d-flex flex-row justify-content-center align-items-center mt-3">
                         <label class="h6" for="newPrimaryKey">Choose New Primary Key:&nbsp;</label>
                         <select name="newPrimaryKey" id="newPrimaryKey">
                             <option th:each="header: ${newTableHeaders}" th:value="${headerStat.index}" th:text="${header}"></option>
@@ -71,7 +71,7 @@
             </div>
 
             <!--Proceed Button-->
-            <div class="row">
+            <div class="row mt-3">
                 <div class="col-2 m-auto text-center">
                     <button id="proceedBtn" class="btn btn-primary">
                         Proceed

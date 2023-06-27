@@ -52,6 +52,11 @@ document.getElementById('uploadBtn').onclick = ev => {
                 uploadBody.classList.add('d-none');
                 uploadSuccessSection.classList.remove('d-none');
                 uploadSuccessAnim.play();
+                setTimeout(() => {
+                    const response = JSON.parse(xhr.response);
+                    window.sessionStorage.setItem('id', response.id);
+                    window.location = `/preview?id=${response.id}`;
+                }, 2500);
             }
             else if (xhr.readyState === 4 && xhr.status === 401) {
                 uploadBody.classList.add('d-none');

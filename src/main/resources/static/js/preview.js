@@ -2,6 +2,7 @@ const oldTable = document.getElementById("oldTable");
 const newTable = document.getElementById("newTable");
 const oldPrimaryKey = document.getElementById("oldPrimaryKey");
 const newPrimaryKey = document.getElementById("newPrimaryKey");
+const proceedBtn = document.getElementById("proceedBtn");
 
 
 let oldTableColIdx = 0;
@@ -50,3 +51,11 @@ newPrimaryKey.onchange = ev => {
 
 initialSetup(oldTable, oldTableColIdx, 'bg-warning');
 initialSetup(newTable, newTableColIdx, 'bg-info');
+
+proceedBtn.onclick = ev => {
+    const id = window.sessionStorage.getItem('id');
+    window.sessionStorage.setItem("id", id);
+    window.sessionStorage.setItem("oldPrimaryKeyIdx", oldPrimaryKey.value);
+    window.sessionStorage.setItem("newPrimaryKeyIdx", newPrimaryKey.value);
+    window.location = `/process`;
+}
