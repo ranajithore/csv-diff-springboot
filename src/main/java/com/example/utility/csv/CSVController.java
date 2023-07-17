@@ -1,40 +1,35 @@
 package com.example.utility.csv;
 
+import com.example.utility.csv.records.Report;
 import com.example.utility.csv.utils.CSVUtil;
 import com.example.utility.csv.utils.SQLiteUtil;
 import com.example.utility.csv.utils.ZipUtil;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import net.lingala.zip4j.exception.ZipException;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
+import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.ContentDisposition;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.ResourceUtils;
 import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.*;
+import java.math.RoundingMode;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -47,10 +42,10 @@ public class CSVController {
     private final String oldFileName = "oldFile.csv";
     private final String newFileName = "newFile.csv";
 
-    private final Gson gson = new Gson();
+    private final Gson gson = new GsonBuilder().create();
 
     @GetMapping("/")
-    public String index() {
+    public String index() throws JRException, FileNotFoundException {
         return "index";
     }
 
@@ -80,7 +75,7 @@ public class CSVController {
     public SseEmitter processEvents(@RequestParam String id, @RequestParam String oldPrimaryKeyIdx, @RequestParam String newPrimaryKeyIdx) {
         final Path oldCSVFilePath = Paths.get(uploadDir, id, oldFileName);
         final Path newCSVFilePath = Paths.get(uploadDir, id, newFileName);
-        final SseEmitter emitter = new SseEmitter();
+        final SseEmitter emitter = new SseEmitter(0L);
 
         ExecutorService service = Executors.newSingleThreadExecutor();
         service.execute(() -> {
@@ -202,17 +197,28 @@ public class CSVController {
             sentEmitterTextResponse(emitter, "stop", "Operation Completed");
             sentEmitterTextResponse(emitter, "message", "Exporting Result To Excel Files");
 
-            SQLiteUtil.exportToExcel(oldCSVFilePath, newCSVFilePath);
+            SQLiteUtil.exportToExcel(oldCSVFilePath, newCSVFilePath, oldPrimaryKey, newPrimaryKey);
+
+            stopWatch.stop();
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
+            decimalFormat.setRoundingMode(RoundingMode.CEILING);
+            float operationTime = Float.parseFloat(decimalFormat.format(stopWatch.getTotalTimeSeconds()));
+            System.out.println(operationTime);
+            Report report = SQLiteUtil.generateReport(operationTime, oldCSVFilePath, newCSVFilePath, oldPrimaryKey, newPrimaryKey);
+            FileWriter reportFileWriter = new FileWriter(oldCSVFilePath.getParent().resolve("report.json").toString());
+            gson.toJson(report, reportFileWriter);
+            reportFileWriter.flush();
+            reportFileWriter.close();
+
+            SQLiteUtil.exportReportToPdf(oldCSVFilePath.getParent().resolve("report.json"), ResourceUtils.getFile("classpath:ComparisonReport.jrxml").toPath());
 
             sentEmitterTextResponse(emitter, "complete", "Exported Successfully");
-
         }
         catch (Exception e) {
             e.printStackTrace();
             sentEmitterTextResponse(emitter, "error", e.getMessage());
         }
         finally {
-            stopWatch.stop();
             sentEmitterTextResponse(emitter, "message", "Operation Time: " + stopWatch.getTotalTimeSeconds() + " SECONDS");
             sentEmitterTextResponse(emitter, "closeConnection", "Close Connection");
         }

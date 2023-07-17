@@ -14,6 +14,9 @@ java {
 
 repositories {
     mavenCentral()
+    maven {
+        url "https://jaspersoft.jfrog.io/jaspersoft/jaspersoft-repo"
+    }
 }
 
 dependencies {
@@ -23,6 +26,8 @@ dependencies {
     implementation 'org.xerial:sqlite-jdbc:3.42.0.0'
     implementation 'org.dhatim:fastexcel:0.15.3'
     implementation 'net.lingala.zip4j:zip4j:2.11.5'
+    implementation 'net.sf.jasperreports:jasperreports:6.20.5'
+    implementation 'com.lowagie:itext:4.2.1'
     implementation("com.google.guava:guava:32.0.1-jre")
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
