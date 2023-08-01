@@ -11,8 +11,8 @@
 </head>
 <body>
     <!--Nav Bar-->
-    <nav class="navbar fixed-top bg-dark border-bottom border-bottom-dark" data-bs-theme="dark">
-        <img class="logo" src="../static/images/" alt="">
+    <nav class="navbar header fixed-top bg-dark border-bottom border-bottom-dark" data-bs-theme="dark">
+        <img class="logo" src="images/" alt="">
     </nav>
 
     <!--Banner-->
@@ -26,7 +26,10 @@
         <div class="container m-3 col-4">
             <h3>Instructions</h3>
             <ul>
-                <li>Upload CSV</li>
+                <li>Compress individual CSV in zip format and upload</li>
+                <li>Each zip should contain only one CSV file</li>
+                <li>There should be a Primary Key to common in both files to get expected result</li>
+                <li>Don't close the page in between else need to start from beginning</li>
             </ul>
         </div>
 
@@ -37,7 +40,7 @@
                 <p><span class="control-label">(</span>&nbsp;<span>)</span> Mandatory fields, Upload zip files only</p>
                 <div class="row mt-3">
                     <div class="col">
-                        <label class="label control-label" for="oldFileInput">Old File</label>
+                        <label class="label control-label" for="oldFileInput">Source File</label>
                         <div class="row align-items-center">
                             <div class="col-6">
                                 <input required id="oldFileInput" name="oldFile" class="form-control" type="file" accept="application/zip">
@@ -52,7 +55,7 @@
                 </div>
                 <div class="row mt-2">
                     <div class="col">
-                        <label class="label control-label" for="newFileInput">New File</label>
+                        <label class="label control-label" for="newFileInput">Target File</label>
                         <div class="row align-items-center">
                             <div class="col-6">
                                 <input required id="newFileInput" name="oldFile" class="form-control" type="file" accept="application/zip">
@@ -99,7 +102,7 @@
     </div>
 
     <!--Footer-->
-    <nav class="navbar fixed-bottom bg-dark">
+    <nav class="navbar footer fixed-bottom bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand m-auto footer-text" href="#">© 2023. All rights reserved.</a>
         </div>

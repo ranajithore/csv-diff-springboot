@@ -160,8 +160,8 @@ public class CSVController {
     //        Create Schema From CSV Files
             sentEmitterTextResponse(emitter, "message", "Creating SQLite Schema From CSV Files");
 
-            SQLiteUtil.createSchemaFromOldCSV(oldCSVFilePath);
-            SQLiteUtil.createSchemaFromNewCSV(newCSVFilePath);
+//            SQLiteUtil.createSchemaFromOldCSV(oldCSVFilePath);
+//            SQLiteUtil.createSchemaFromNewCSV(newCSVFilePath);
 
             sentEmitterTextResponse(emitter, "message", "Schema Created Successfully");
             sentEmitterTextResponse(emitter, "step", "1");
@@ -194,7 +194,6 @@ public class CSVController {
             sentEmitterTextResponse(emitter, "step", "3");
 
     //        Export To Excel
-            sentEmitterTextResponse(emitter, "stop", "Operation Completed");
             sentEmitterTextResponse(emitter, "message", "Exporting Result To Excel Files");
 
             SQLiteUtil.exportToExcel(oldCSVFilePath, newCSVFilePath, oldPrimaryKey, newPrimaryKey);
@@ -210,9 +209,11 @@ public class CSVController {
             reportFileWriter.flush();
             reportFileWriter.close();
 
-            SQLiteUtil.exportReportToPdf(oldCSVFilePath.getParent().resolve("report.json"), ResourceUtils.getFile("classpath:ComparisonReport.jrxml").toPath());
+            SQLiteUtil.exportReportToPdf(oldCSVFilePath.getParent().resolve("report.json"), ResourceUtils.getFile("classpath:ComparisonReport-V2.jrxml").toPath());
 
             sentEmitterTextResponse(emitter, "complete", "Exported Successfully");
+            sentEmitterTextResponse(emitter, "stop", "Operation Completed");
+
         }
         catch (Exception e) {
             e.printStackTrace();

@@ -11,10 +11,10 @@
 </head>
 <body>
 <!--Nav Bar-->
-<nav class="navbar fixed-top bg-dark border-bottom border-bottom-dark" data-bs-theme="dark">
+<nav class="navbar header fixed-top bg-dark border-bottom border-bottom-dark" data-bs-theme="dark">
     <div class="d-flex w-100">
         <img class="logo" src="/images/" alt="">
-        <h5 class="text-white w-100 text-center">CSV Comparison Utility</h5>
+        <h5 class="text-white w-100 text-center company-title">CSV Comparison Utility</h5>
     </div>
 </nav>
 
@@ -24,9 +24,11 @@
         <lottie-player id="failureAnim" src="https://assets5.lottiefiles.com/packages/lf20_pqpmxbxp.json" class="anim d-none m-auto"></lottie-player>
         <lottie-player id="processAnim" class="m-auto anim" src="https://assets2.lottiefiles.com/temp/lf20_UsfnhV.json" loop  autoplay></lottie-player>
     </div>
-    <div class="row text-center my-3">
-        <h6 id="successText" class="d-none">Operation Completed. Please click on Download Button to download the result.</h6>
-        <h6 id="failureText" class="d-none">Operation Failed. Please check Operation Logs.</h6>
+    <div class="row status-row text-center">
+        <div class="col d-flex justify-content-center align-items-center">
+            <h6 id="successText" class="d-none">Operation Completed. Please click on Download Button to download the result.</h6>
+            <h6 id="failureText" class="d-none">Operation Failed. Please check Operation Logs.</h6>
+        </div>
     </div>
 
     <div class="row mt-4">
@@ -92,7 +94,7 @@
 </div>
 
 <!--Footer-->
-<nav class="navbar fixed-bottom bg-dark">
+<nav class="navbar footer fixed-bottom bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand m-auto footer-text" href="#">© 2023 . All rights reserved.</a>
     </div>

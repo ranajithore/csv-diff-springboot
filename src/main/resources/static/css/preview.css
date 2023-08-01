@@ -72,3 +72,18 @@ select {
     box-shadow: none !important;
 }
 
+.row {
+    --bs-gutter-x: 0;
+}
+
+.header {
+    height: 70px;
+}
+
+.footer {
+    height: 50px;
+}
+
+.company-title {
+    font-size: 28px;
+}

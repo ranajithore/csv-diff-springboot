@@ -1,12 +1,14 @@
 package com.example.utility.csv.utils;
 
 import com.example.utility.csv.records.*;
+import com.lowagie.text.Header;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JsonDataSource;
 import org.dhatim.fastexcel.Workbook;
 import org.dhatim.fastexcel.Worksheet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.ResourceUtils;
 
 import java.io.*;
 import java.math.RoundingMode;
@@ -16,39 +18,33 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SQLiteUtil {
     private static final String applicationName = "Utility Application";
     private static final String applicationVersion = "1.0";
     private static final String OUTPUT_DIR_NAME = "output";
-    private static final String ROWS_DELETED_FILE_NAME = "rows-deleted";
-    private static final String ROWS_ADDED_FILE_NAME = "rows-added";
-    private static final String ROWS_UPDATED_FILE_NAME = "rows-updated";
+    private static final String ROWS_DELETED_FILE_NAME = "rows present in source file but not in target file";
+    private static final String ROWS_ADDED_FILE_NAME = "rows present in target file but not in source file";
+    private static final String ROWS_UPDATED_FILE_NAME = "rows present in both source and target file but have some mismatch";
     private static final String COLOR_RGB_LIGHT_RED = "F1AEB5";
     private static final String COLOR_RGB_LIGHT_GREEN = "A6E9D5";
     private static final String COLOR_RGB_LIGHT_YELLOW = "FFE69C";
     private static final int EXCEL_ROW_LIMIT = 50000;
     private static final String FILE_EXTENSION = "xlsx";
     private static final String DEFAULT_SHEET_NAME = "Sheet 1";
+    private static final int SAMPLE_LIMIT = 10;
     private static final String dbName = "database.sqlite";
     private static final Logger logger = LoggerFactory.getLogger(SQLiteUtil.class);
 
 //    PUBLIC METHODS
 
-    public static void createSchemaFromOldCSV(Path csvFilePath) throws IOException {
-        createSchemaFromCSV(csvFilePath, "OLD");
+    public static void createOldTableFromSchemaFile(Path csvFilePath) throws IOException, SQLException {
+        createTableFromCSV(csvFilePath, "OLD");
     }
 
-    public static void createSchemaFromNewCSV(Path csvFilePath) throws IOException {
-        createSchemaFromCSV(csvFilePath, "NEW");
-    }
-
-    public static void createOldTableFromSchemaFile(Path csvFilePath) throws IOException {
-        createTableFromSchemaFile(csvFilePath);
-    }
-
-    public static void createNewTableFromSchemaFile(Path csvFilePath) throws IOException {
-        createTableFromSchemaFile(csvFilePath);
+    public static void createNewTableFromSchemaFile(Path csvFilePath) throws IOException, SQLException {
+        createTableFromCSV(csvFilePath, "NEW");
     }
 
     public static void importDataFromOldCSV(Path csvFilePath) throws IOException {
@@ -82,7 +78,7 @@ public class SQLiteUtil {
         exportRowsDeleted(oldCSVFilePath, dbPath);
         exportRowsAdded(newCSVFilePath, dbPath);
 //        exportRowsUpdated(oldCSVFilePath, newCSVFilePath, dbPath);
-        exportRowsUpdatedDataInColumnFormat(oldCSVFilePath, newCSVFilePath, dbPath, newPrimaryKey);
+        exportRowsUpdatedDataInColumnFormat(oldCSVFilePath, newCSVFilePath, dbPath, oldPrimaryKey, newPrimaryKey);
     }
 
     public static Report generateReport(double operationTime, Path oldCSVFilePath, Path newCSVFilePath, String oldPrimaryKey, String newPrimaryKey) throws SQLException, IOException {
@@ -91,6 +87,16 @@ public class SQLiteUtil {
         final ArrayList<String> oldHeaders = CSVUtil.getHeaders(oldCSVFilePath);
         final ArrayList<String> newHeaders = CSVUtil.getHeaders(newCSVFilePath);
 
+        final HashMap<String, String> dataTypes = getAllColumnDataTypes(dbPath);
+
+        final ArrayList<String> deletedHeaders = getDeletedHeaders(oldHeaders, newHeaders);
+        final ArrayList<String> addedHeaders = getAddedHeaders(oldHeaders, newHeaders);
+        final ArrayList<String> commonHeaders = getCommonHeaders(oldHeaders, newHeaders);
+
+        final List<Column> deletedColumns = deletedHeaders.stream().map(header -> new Column(header, dataTypes.get(header))).toList();
+        final List<Column> addedColumns = addedHeaders.stream().map(header -> new Column(header, dataTypes.get(header))).toList();
+        final List<Column> commonColumns = commonHeaders.stream().map(header -> new Column(header, dataTypes.get(header))).toList();
+
         TableStructure oldTable = getTableStructure(dbPath, "OLD", oldPrimaryKey);
         TableStructure newTable = getTableStructure(dbPath, "NEW", newPrimaryKey);
 
@@ -98,9 +104,16 @@ public class SQLiteUtil {
                 operationTime,
                 oldTable,
                 newTable,
+                deletedHeaders.size(),
+                addedHeaders.size(),
+                commonHeaders.size(),
+                deletedColumns,
+                addedColumns,
+                commonColumns,
                 getRowWiseComparisonData(dbPath),
                 getColWiseComparisonData(oldHeaders, newHeaders),
-                getColumnComparisonData(dbPath, oldTable, newTable, oldHeaders, newHeaders)
+                getColumnComparisonData(dbPath, oldTable, newTable, oldHeaders, newHeaders),
+                collectSampleDataForRowDifferenceInColumnFormat(oldCSVFilePath, newCSVFilePath, dbPath, oldPrimaryKey)
         );
     }
 
@@ -108,6 +121,7 @@ public class SQLiteUtil {
         JRDataSource jsonDataSource = new JsonDataSource(jsonReport.toFile());
         JasperReport jasperReport = JasperCompileManager.compileReport(sourceReportFile.toString());
         Map<String, Object> params = new HashMap<>();
+        params.put("COMPANY_LOGO_PATH", ResourceUtils.getFile("classpath:images/logo.png").toPath().toString());
         JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params, jsonDataSource);
 
         JasperExportManager.exportReportToPdfFile(jasperPrint,jsonReport.getParent().resolve(OUTPUT_DIR_NAME).resolve("report.pdf").toString());
@@ -126,19 +140,19 @@ public class SQLiteUtil {
         }
     }
 
-    private static void createSchemaFromCSV(Path csvFilePath, String tableName) throws IOException {
-        Path schemaFilePath = csvFilePath.getParent().resolve(csvFilePath.getFileName() + ".sql");
-        int numTopRows = 50;
-        String arguments = String.format("head -n %d %s | csvsql -i sqlite --tables %s > %s", numTopRows, csvFilePath, tableName, schemaFilePath);
-        runUnixScript(arguments);
-    }
+//    private static void createSchemaFromCSV(Path csvFilePath, String tableName) throws IOException {
+//        Path schemaFilePath = csvFilePath.getParent().resolve(csvFilePath.getFileName() + ".sql");
+//        int numTopRows = 50;
+//        String arguments = String.format("head -n %d %s | csvsql -i sqlite --tables %s > %s", numTopRows, csvFilePath, tableName, schemaFilePath);
+//        runUnixScript(arguments);
+//    }
 
-    private static void createTableFromSchemaFile(Path csvFilePath) throws IOException {
-        Path dbPath = csvFilePath.getParent().resolve(dbName);
-        Path schemaFilePath = csvFilePath.getParent().resolve(csvFilePath.getFileName() + ".sql");
-        String arguments = "sqlite3 %s \".read %s\"".formatted(dbPath, schemaFilePath);
-        runUnixScript(arguments);
-    }
+//    private static void createTableFromSchemaFile(Path csvFilePath) throws IOException {
+//        Path dbPath = csvFilePath.getParent().resolve(dbName);
+//        Path schemaFilePath = csvFilePath.getParent().resolve(csvFilePath.getFileName() + ".sql");
+//        String arguments = "sqlite3 %s \".read %s\"".formatted(dbPath, schemaFilePath);
+//        runUnixScript(arguments);
+//    }
 
     private static void importDataFromCSV(Path csvFilePath, String tableName) throws IOException {
         Path dbPath = csvFilePath.getParent().resolve(dbName);
@@ -292,15 +306,18 @@ public class SQLiteUtil {
         connection.close();
     }
 
-    private static void exportRowsUpdatedDataInColumnFormat(Path oldCSVFilePath, Path newCSVFilePath, Path dbPath, String primaryKey) throws SQLException, IOException {
+    private static void exportRowsUpdatedDataInColumnFormat(Path oldCSVFilePath, Path newCSVFilePath, Path dbPath, String oldPrimaryKey, String newPrimaryKey) throws SQLException, IOException {
 //        Get CSV headers
         final ArrayList<String> oldHeaders = CSVUtil.getHeaders(oldCSVFilePath);
         final ArrayList<String> newHeaders = CSVUtil.getHeaders(newCSVFilePath);
-        String processedPrimaryKey = processDuplicateHeader(primaryKey);
 
         final ArrayList<String> deletedHeaders = getDeletedHeaders(oldHeaders, newHeaders);
         final ArrayList<String> addedHeaders = getAddedHeaders(oldHeaders, newHeaders);
         final ArrayList<String> commonHeaders = getCommonHeaders(oldHeaders, newHeaders);
+
+        deletedHeaders.remove(oldPrimaryKey);
+        addedHeaders.remove(newPrimaryKey);
+        commonHeaders.remove(oldPrimaryKey);
 
 //        Sort headers alphabetically
         Collections.sort(deletedHeaders);
@@ -313,7 +330,7 @@ public class SQLiteUtil {
         Worksheet ws = wb.newWorksheet(DEFAULT_SHEET_NAME);
 
 //        Write Headers
-        final String[] excelHeaders = {"COLUMN NAME", primaryKey.toUpperCase(), "OLD VALUE", "NEW VALUE"};
+        final String[] excelHeaders = {"COLUMN NAME", oldPrimaryKey.equals(newPrimaryKey) ? oldPrimaryKey.toUpperCase() : oldPrimaryKey.toUpperCase() + " | " + newPrimaryKey.toUpperCase(), "OLD VALUE", "NEW VALUE"};
         writeHeadersToExcel(new ArrayList<>(Arrays.asList(excelHeaders)), ws);
 
         Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
@@ -323,7 +340,7 @@ public class SQLiteUtil {
 
         for (String header : deletedHeaders) {
 //          Get results from SQLITE TABLE
-            String query = "SELECT \"%s\", \"%s\" FROM UPDATED".formatted(processedPrimaryKey, header);
+            String query = "SELECT \"%s\", \"%s\" FROM UPDATED".formatted(oldPrimaryKey, header);
             ResultSet resultSet =  statement.executeQuery(query);
 
             for (; resultSet.next() ; row++) {
@@ -340,6 +357,7 @@ public class SQLiteUtil {
                     wb.finish();
                     wb = openWorkBook(oldCSVFilePath, ROWS_UPDATED_FILE_NAME, ++fileSuffix);
                     ws = wb.newWorksheet(DEFAULT_SHEET_NAME);
+                    writeHeadersToExcel(new ArrayList<>(Arrays.asList(excelHeaders)), ws);
                     row = 1;
                 }
             }
@@ -347,7 +365,7 @@ public class SQLiteUtil {
 
         for (String header : addedHeaders) {
 //          Get results from SQLITE TABLE
-            String query = "SELECT \"%s\", \"%s\" FROM UPDATED".formatted(processedPrimaryKey, processDuplicateHeader(header));
+            String query = "SELECT \"%s\", \"%s\" FROM UPDATED".formatted(oldPrimaryKey, processDuplicateHeader(header));
             ResultSet resultSet =  statement.executeQuery(query);
 
             for (; resultSet.next() ; row++) {
@@ -364,6 +382,7 @@ public class SQLiteUtil {
                     wb.finish();
                     wb = openWorkBook(oldCSVFilePath, ROWS_UPDATED_FILE_NAME, ++fileSuffix);
                     ws = wb.newWorksheet(DEFAULT_SHEET_NAME);
+                    writeHeadersToExcel(new ArrayList<>(Arrays.asList(excelHeaders)), ws);
                     row = 1;
                 }
             }
@@ -372,7 +391,7 @@ public class SQLiteUtil {
         for (String header : commonHeaders) {
 //          Get results from SQLITE TABLE
             String query = "SELECT \"%s\", \"%s\", \"%s\" FROM UPDATED WHERE \"%s\" != \"%s\"".formatted(
-                    processedPrimaryKey, header, processDuplicateHeader(header), header, processDuplicateHeader(header));
+                    oldPrimaryKey, header, processDuplicateHeader(header), header, processDuplicateHeader(header));
             ResultSet resultSet =  statement.executeQuery(query);
 
             for (; resultSet.next() ; row++) {
@@ -391,6 +410,7 @@ public class SQLiteUtil {
                     wb.finish();
                     wb = openWorkBook(oldCSVFilePath, ROWS_UPDATED_FILE_NAME, ++fileSuffix);
                     ws = wb.newWorksheet(DEFAULT_SHEET_NAME);
+                    writeHeadersToExcel(new ArrayList<>(Arrays.asList(excelHeaders)), ws);
                     row = 1;
                 }
             }
@@ -497,20 +517,20 @@ public class SQLiteUtil {
         ResultSet resultSet = statement.executeQuery(query);
         resultSet.next();
         long numOfRowsDeleted = resultSet.getLong(1);
-        comparisonData.add(new ComparisonData("Deleted", "Total number of rows deleted from the source file", numOfRowsDeleted));
+        comparisonData.add(new ComparisonData("Deleted", "Total number of rows present in source file but not in target file", numOfRowsDeleted));
 
         query = "SELECT COUNT(*) FROM ADDED";
         resultSet = statement.executeQuery(query);
         resultSet.next();
         long numOfRowsAdded = resultSet.getLong(1);
-        comparisonData.add(new ComparisonData("Added", "Total number of new rows added in the target file", numOfRowsAdded));
+        comparisonData.add(new ComparisonData("Added", "Total number of rows present in target file but not in source file", numOfRowsAdded));
 
 
         query = "SELECT COUNT(*) FROM UPDATED";
         resultSet = statement.executeQuery(query);
         resultSet.next();
         long numOfRowsUpdated = resultSet.getLong(1);
-        comparisonData.add(new ComparisonData("Updated", "Total number of rows updated", numOfRowsUpdated));
+        comparisonData.add(new ComparisonData("Updated", "Total number of rows present in both source file and target file", numOfRowsUpdated));
 
         return comparisonData;
     }
@@ -593,5 +613,113 @@ public class SQLiteUtil {
         }
 
         return columnComparisonData;
+    }
+
+    private static HashMap<String, String> getAllColumnDataTypes(Path dbPath) throws SQLException {
+        HashMap<String, String> map = new HashMap<>();
+
+        Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+        Statement statement = connection.createStatement();
+
+        String query = "PRAGMA table_info(\"OLD\")";
+        ResultSet resultSet = statement.executeQuery(query);
+
+        while (resultSet.next()) {
+            String colName = resultSet.getString(2);
+            String dataType = resultSet.getString(3);
+            if (!map.containsKey(colName)) {
+                map.put(colName, dataType);
+            }
+        }
+
+        query = "PRAGMA table_info(\"NEW\")";
+        resultSet = statement.executeQuery(query);
+
+        while (resultSet.next()) {
+            String colName = resultSet.getString(2);
+            String dataType = resultSet.getString(3);
+            if (!map.containsKey(colName)) {
+                map.put(colName, dataType);
+            }
+        }
+
+        statement.close();
+        connection.close();
+
+        return map;
+    }
+
+    private static void createTableFromCSV(Path csvFilePath, String tableName) throws IOException, SQLException {
+        ArrayList<String> headers = CSVUtil.getHeaders(csvFilePath);
+        StringBuilder columns = new StringBuilder();
+        for (int i = 0; i < headers.size(); i++) {
+            columns.append("\"").append(headers.get(i)).append("\"").append(i == headers.size() - 1 ? " TEXT" : " TEXT,");
+        }
+        String query = "CREATE TABLE " + tableName + "(" + columns + ");";
+        Path dbPath = csvFilePath.getParent().resolve(dbName);
+        executeSQLQuery(dbPath, query);
+    }
+
+    private static ArrayList<RowDifferenceColumnFormat> collectSampleDataForRowDifferenceInColumnFormat(Path oldCSVFilePath, Path newCSVFilePath, Path dbPath, String oldPrimaryKey) throws IOException, SQLException {
+        ArrayList<RowDifferenceColumnFormat> sample = new ArrayList<>();
+
+//        Get CSV headers
+        final ArrayList<String> oldHeaders = CSVUtil.getHeaders(oldCSVFilePath);
+        final ArrayList<String> newHeaders = CSVUtil.getHeaders(newCSVFilePath);
+
+        final ArrayList<String> deletedHeaders = getDeletedHeaders(oldHeaders, newHeaders);
+        final ArrayList<String> addedHeaders = getAddedHeaders(oldHeaders, newHeaders);
+        final ArrayList<String> commonHeaders = getCommonHeaders(oldHeaders, newHeaders);
+
+//        Sort headers alphabetically
+        Collections.sort(deletedHeaders);
+        Collections.sort(addedHeaders);
+        Collections.sort(commonHeaders);
+
+        Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+        Statement statement = connection.createStatement();
+
+        for (String header : deletedHeaders) {
+//          Get results from SQLITE TABLE
+            String query = "SELECT \"%s\", \"%s\" FROM UPDATED LIMIT %d".formatted(oldPrimaryKey, header, SAMPLE_LIMIT);
+            ResultSet resultSet =  statement.executeQuery(query);
+
+            while (resultSet.next()) {
+                String primaryKeyValue = resultSet.getString(1);
+                String oldValue = resultSet.getString(2);
+                sample.add(new RowDifferenceColumnFormat(header, primaryKeyValue, oldValue, ""));
+            }
+        }
+
+        for (String header : addedHeaders) {
+//          Get results from SQLITE TABLE
+            String query = "SELECT \"%s\", \"%s\" FROM UPDATED LIMIT %d".formatted(oldPrimaryKey, processDuplicateHeader(header), SAMPLE_LIMIT);
+            ResultSet resultSet =  statement.executeQuery(query);
+
+            while (resultSet.next()) {
+                String primaryKeyValue = resultSet.getString(1);
+                String newValue = resultSet.getString(2);
+                sample.add(new RowDifferenceColumnFormat(header, primaryKeyValue, "", newValue));
+            }
+        }
+
+        for (String header : commonHeaders) {
+//          Get results from SQLITE TABLE
+            String query = "SELECT \"%s\", \"%s\", \"%s\" FROM UPDATED WHERE \"%s\" != \"%s\" LIMIT %d".formatted(
+                    oldPrimaryKey, header, processDuplicateHeader(header), header, processDuplicateHeader(header), SAMPLE_LIMIT);
+            ResultSet resultSet =  statement.executeQuery(query);
+
+            while (resultSet.next()) {
+                String primaryKeyValue = resultSet.getString(1);
+                String oldValue = resultSet.getString(2);
+                String newValue = resultSet.getString(3);
+                sample.add(new RowDifferenceColumnFormat(header, primaryKeyValue, oldValue, newValue));
+            }
+        }
+
+        statement.close();
+        connection.close();
+
+        return sample;
     }
 }

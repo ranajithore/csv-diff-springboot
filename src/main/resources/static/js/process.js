@@ -92,7 +92,7 @@ eventSource.onmessage = ev => {
         logs.innerHTML += `<p class="text-danger">${data.error}</p>`;
         processAnim.pause();
         processAnim.classList.add('d-none');
-        successText.classList.remove('d-none');
+        failureText.classList.remove('d-none');
         failureAnim.classList.remove('d-none');
         failureAnim.play();
     }
@@ -122,7 +122,7 @@ eventSource.onmessage = ev => {
             successAnim.classList.remove('d-none');
             successAnim.play();
         }
-        else  {
+        else {
             failureText.classList.remove('d-none');
             failureAnim.classList.remove('d-none');
             failureAnim.play();

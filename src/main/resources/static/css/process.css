@@ -121,3 +121,29 @@ h6 {
     width: 300px;
     background: transparent;
 }
+
+.row {
+    --bs-gutter-x: 0;
+}
+
+.header {
+    height: 70px;
+}
+
+.footer {
+    height: 50px;
+}
+
+.status-row {
+    height: 160px;
+    margin-top: -100px;
+}
+
+#successText, #failureText {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.company-title {
+    font-size: 28px;
+}
